@@ -1,10 +1,11 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const cors = require('cors');
+
+const connectDB = require('./config/dbConnect.js');
 const routes = require('./api');
 
 
@@ -21,9 +22,21 @@ app.use(cors());
 app.use('/api', routes);
 
 app.get('/', (req, res) => {
-    res.send("Kindly Put an API before any route");
+    res.send("Kindly Put an API/Version : v1 || v2 ... before any route");
 })
 
-app.listen(3000, () => {
-    console.log("App started listning to localhost:3000");
-})
+async function startServer() {
+    const connection = await connectDB();
+    if(!connection) throw new Error("Error connecting to DB , " + JSON.stringify(connection));
+
+    console.log("Connected to DB");
+    app.listen(process.env.PORT || 3000, () => {
+        console.log("App started listning to localhost:"  + process.env.PORT || 3000);
+    })
+}
+
+try {
+    startServer()
+} catch (error) {
+    console.log(error);
+}
